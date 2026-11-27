@@ -115,6 +115,7 @@ Each person owns **one track**: one research idea from a recent paper, reimpleme
 | `t3_ushape` | Rubens | Joint valence–arousal: U-shape, chained and multi-output models | arXiv 2601.21483, 2608.30828 |
 | `t4_text` | Sachit | Text models trained from scratch: sparse TF-IDF + linear, small NN, stacking | arXiv 2604.07066 |
 | `t5_domain` | Kishan | Train/test shift, validation design, per-country models, error and bias analysis | arXiv 2609.26346, 2512.10882 |
+| `t6_papers` | Nel (or whoever has time) | 3 models from Nel's papers: induced lexicon mean (Werlen 2021), period context (Buechel 2019), transformer trained from scratch small vs bigger (Mendes 2023, Kim 2024) | see `tracks/t6_papers/README.md` |
 
 Owners can swap. **The detailed plan of each track is in `tracks/<track>/README.md`. Read yours before coding.**
 
