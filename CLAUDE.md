@@ -240,6 +240,14 @@ bash scripts/download_data.sh   # gdown of the whole Drive folder into data/raw/
 
 If gdown fails (Drive quota / permissions), download the files by hand from the Drive folder into `data/raw/`, then run `python src/prepare_data.py`. Always load the parquet files, not the CSVs.
 
+### What we know from the real files (checked Fri 27 Nov, 22:45)
+- `x_train_final`: **869,896 rows**, ids 0 → 869,895. `x_test_final`: **372,812 rows**, ids 869,896 → 1,242,707.
+- **⚠️ The train file has NO target columns** (no valence/arousal) and there is no `y_train` in the Drive. Asked the organizers / check HFactory. When it arrives: put it in `data/raw/`, run `python src/prepare_data.py`, it becomes `data/processed/y_train.parquet` (columns `id` + the 2 targets). All training scripts read it from there.
+- 218 columns: `id`, `clean_text`, `date`, `source` + **214 features**. Families A, B, D, F, G, H only. **No `tfidf_svd_*`, no `char_tfidf_svd_*`, no `text_en`.**
+- `source` = 25 % each: `assemblee` (2007–2024), `senat` (1996–2026), `uk_commons` (1988–2019), `us_congress` (1994–2024).
+- **Test = random split**: same sources, same years, same length distribution as train. The shared random folds in `src/common.py` are the right validation.
+- **Drive download quota**: on Friday night gdown fails with "Too many users have viewed or downloaded this file". Workaround: open the file in the browser and use "Download", or make a copy in your own Drive and download the copy.
+
 ### Columns (from `sample_x_test.csv`, 218 columns)
 
 Metadata: `id`, `clean_text` (raw speech, original language), `date` (YYYY-MM-DD), `source`.
