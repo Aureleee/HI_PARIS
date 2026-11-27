@@ -35,20 +35,37 @@
 Tell the user in a few lines: who they are in the team, their track, the papers behind it, the plan steps from their track README, and the timeline (§0bis). Then start step 1 of their plan right away.
 
 ### 4. End of EVERY piece of work: give the push command
-Even though the hooks auto-push, **always end your reply with a copy-paste block** so the user can push cleanly by hand (hooks may be off, or the user may work without Claude Code):
+Even though the hooks auto-push, **always end your reply with a copy-paste block** so the user can push cleanly by hand (hooks may be off, or the user may work without Claude Code). **Check the OS first** (`uname` works on Mac/Linux; on Windows the prompt is PowerShell or `$env:OS` is `Windows_NT`) and give the matching block. Fill in the real path, branch and message. Never put Claude in the message or as co-author.
 
+**Mac / Linux** (Terminal):
 ```bash
-cd <absolute path of the repo> && git add -A && git commit -m "<short message>" ; git push -u origin <their branch>
+# push my branch
+cd <repo path> && git add -A && git commit -m "<short message>" ; git push -u origin <branch>
+# ready to share with the team: push my branch + merge into main + push main
+cd <repo path> && git add -A && git commit -m "<short message>" ; bash scripts/ship.sh
 ```
 
-When the work is ready to be shared with the team (it runs end to end, results logged), give instead:
-
-```bash
-cd <absolute path of the repo> && git add -A && git commit -m "<short message>" ; bash scripts/ship.sh
+**Windows** (PowerShell, in the repo folder):
+```powershell
+# push my branch
+cd <repo path>; git add -A; git commit -m "<short message>"; git push -u origin <branch>
+# ready to share with the team
+cd <repo path>; git add -A; git commit -m "<short message>"; python scripts\gitsync.py ship
 ```
 
-(`ship.sh` = push own branch + merge it into `main` + push `main`. No Pull Request needed.)
-Fill in the real path, branch and message. Never put Claude in the message or as co-author.
+`ship` = push own branch + merge it into `main` + push `main`. No Pull Request needed.
+`scripts/gitsync.py` (`sync` | `push` | `ship`) is the cross-platform Python version of the `.sh` scripts: use it on Windows, or anywhere bash is missing.
+
+### 5. Windows notes
+- Claude Code on Windows needs **Git for Windows** (it brings Git Bash). With it, the `bash` hooks in `.claude/settings.json` work as on Mac. If a hook fails with "bash not found", install Git for Windows, or run `python scripts\gitsync.py sync` at the start and `python scripts\gitsync.py push` at the end by hand.
+- Data download on Windows (PowerShell, in the repo):
+  ```powershell
+  pip install -r requirements.txt
+  gdown --folder "https://drive.google.com/drive/folders/1i2Ith9mfzTHyb1DX2WHSuXxeB2PCWjNM" -O data/raw
+  python src/prepare_data.py
+  ```
+- Use `python` (not `python3`) and backslashes in paths in PowerShell. `&&` does not exist in old PowerShell: chain with `;`.
+- SSH key: `git clone git@github.com:Aureleee/HI_PARIS.git` needs an SSH key added to GitHub (`ssh-keygen -t ed25519`, then paste `~\.ssh\id_ed25519.pub` in GitHub → Settings → SSH keys).
 
 ---
 
@@ -344,7 +361,8 @@ HI_PARIS/
 │   ├── autopush.sh      # commit + push own branch (after each answer)
 │   ├── download_data.sh # Drive -> data/raw -> parquet
 │   ├── leaderboard.py   # results/scores -> results/RESULTS.md
-│   └── ship.sh          # merge your branch into main + push
+│   ├── ship.sh          # merge your branch into main + push
+│   └── gitsync.py       # same as sync/autopush/ship, cross-platform (Windows)
 ├── data/
 │   ├── raw/             # Drive CSVs (never committed)
 │   └── processed/       # parquet
