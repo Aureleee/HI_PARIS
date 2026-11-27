@@ -224,7 +224,7 @@ Drive folder: https://drive.google.com/drive/folders/1i2Ith9mfzTHyb1DX2WHSuXxeB2
 
 | File | Size | Content |
 |---|---|---|
-| `x_train_final.csv` | 1.85 GB | Train set. Should contain the targets (there is no separate `y_train`). **Check the header first.** |
+| `x_train_final.csv` | 1.85 GB | 870k UNLABELED speeches (text + features). No targets: the challenge is unsupervised. |
 | `x_test_final.csv` | 818 MB | Test features |
 | `y_test_zero.csv` | 4.1 MB | Submission template (all zeros) |
 | `x_Italia.csv` | 909 MB | Italian parliament speeches. Role unclear: extra test domain? unlabeled transfer set? **Ask organizers.** |
@@ -255,7 +255,7 @@ If gdown fails (Drive quota / permissions), download the files by hand from the 
 
 Metadata: `id`, `clean_text` (raw speech, original language), `date` (YYYY-MM-DD), `source`.
 
-Precomputed features, 342 defined in the dictionary, grouped in families:
+Precomputed features: 342 defined in the dictionary, **214 actually present** (families E and I missing):
 
 | Family | Prefix | # | What |
 |---|---|---|---|
