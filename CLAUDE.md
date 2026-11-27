@@ -4,7 +4,51 @@
 > Source of truth: the organizers' Drive folder "Hi!ckathon-Challenge" + `Reglement_Hickathon2026.pdf`.
 > Last update: Fri 27 Nov 2026, ~21:15.
 >
-> **Every Claude agent of the team: read §0 first. It defines how you sync with git.**
+> **Every Claude agent of the team: start with "▶ START HERE" just below.**
+
+---
+
+## ▶ START HERE (every Claude agent, every new session)
+
+### 1. Find out who you work for
+1. Run `git config user.name`, `git config user.email` and `git branch --show-current`.
+2. Match with the team table in §1 (name or GitHub login). If it's unclear, **ask the user: "Who are you: Aurèle, Nel, Rubens, Sachit or Kishan?"** Never guess.
+3. Their role = their track in §0bis:
+
+| Person | Branch | Track | Track plan |
+|---|---|---|---|
+| Aurèle | `aurele` | `t1_gbdt` | `tracks/t1_gbdt/README.md` |
+| Nel | `nel` | `t2_chunks` | `tracks/t2_chunks/README.md` |
+| Rubens | `rubens` | `t3_ushape` | `tracks/t3_ushape/README.md` |
+| Sachit | `sachit` | `t4_text` | `tracks/t4_text/README.md` |
+| Kishan | `kishan` | `t5_domain` | `tracks/t5_domain/README.md` |
+
+(Owners may swap tracks. If the user says so, follow the user and update this table.)
+
+### 2. First-time setup on a new computer (do it yourself, then confirm)
+1. If git has no identity: ask the user for their name + GitHub email, then `git config user.name "..."` and `git config user.email "..."` (repo only).
+2. Go to their branch: `git checkout <branch>` if it exists on origin (`git fetch origin` first), else `git checkout -b <branch> && git push -u origin <branch>`.
+3. If `data/processed/` is empty: `bash scripts/download_data.sh` (installs requirements, downloads the Drive, converts to parquet). If gdown fails, tell the user to download the Drive folder by hand into `data/raw/` and then run `python src/prepare_data.py`.
+4. Check `.claude/settings.json` exists (sync hooks). Remind the user to accept the hooks once.
+
+### 3. Brief the user, then start
+Tell the user in a few lines: who they are in the team, their track, the papers behind it, the plan steps from their track README, and the timeline (§0bis). Then start step 1 of their plan right away.
+
+### 4. End of EVERY piece of work: give the push command
+Even though the hooks auto-push, **always end your reply with a copy-paste block** so the user can push cleanly by hand (hooks may be off, or the user may work without Claude Code):
+
+```bash
+cd <absolute path of the repo> && git add -A && git commit -m "<short message>" ; git push -u origin <their branch>
+```
+
+When the work is ready to be shared with the team (it runs end to end, results logged), give instead:
+
+```bash
+cd <absolute path of the repo> && git add -A && git commit -m "<short message>" ; bash scripts/ship.sh
+```
+
+(`ship.sh` = push own branch + merge it into `main` + push `main`. No Pull Request needed.)
+Fill in the real path, branch and message. Never put Claude in the message or as co-author.
 
 ---
 
