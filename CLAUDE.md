@@ -1,4 +1,4 @@
-# CLAUDE.md — Hi!ckathon #7 (Hi! PARIS) — Team 34
+# CLAUDE.md — Hi!ckathon #7 (Hi! PARIS)
 
 > Context file for Claude Code. Read it fully before touching the code.
 > Source of truth: the organizers' Drive folder "Hi!ckathon-Challenge" + `Reglement_Hickathon2026.pdf`.
@@ -13,7 +13,7 @@
 5 people, 5 Claude agents, 1 repo: `git@github.com:Aureleee/HI_PARIS.git` (SSH only, never HTTPS).
 
 ### Branches
-- **One branch per person**, named after the first name: `aurele`, `axel`, `sachit`, `berenger`, `kishan`.
+- **One branch per person**, named after the first name: `aurele`, `nel`, `rubens`, `sachit`, `kishan`.
 - **Never commit or push directly to `main`.** If the current branch is `main`, stop and ask the user to run `git checkout -b <firstname>` (or `git checkout <firstname>` if it exists).
 - `main` = what works. Merge into `main` through a GitHub Pull Request, only when the code runs end to end. Tell the team on Discord when you merge.
 
@@ -24,9 +24,9 @@
 - If the hooks are not active (e.g. first run, hook approval pending), do it by hand: `bash scripts/sync.sh` at the start, `bash scripts/autopush.sh` at the end.
 
 ### Avoiding conflicts
-- Notebooks: one owner per notebook, prefix with your name: `notebooks/aurele_01_eda.ipynb`. Don't edit someone else's notebook; copy it.
-- Shared code lives in `src/`. Small focused changes. If you change a function signature in `src/`, say it in the commit message.
-- Experiments: append one line per run to `experiments.md` (never rewrite other lines).
+- Your code lives in `tracks/<your_track>/`. Don't edit someone else's track; copy what you need.
+- Shared code lives in `src/`. Small focused changes, announced to the team.
+- Results: only through `log_result()` (each track has its own CSV, so no conflicts).
 
 ### Commits
 - Commit messages short, English, imperative: `add lgbm baseline on nrc features`.
@@ -43,12 +43,67 @@ Then open Claude Code in the repo and accept the project hooks.
 
 ---
 
+## 0bis. Research tracks (one per person, compared on the same ground)
+
+Each person owns **one track**: one research idea from a recent paper, reimplemented from scratch, pushed as far as possible (implementation, tests, training, ablations). At the end we compare all tracks on the same folds and ensemble the best ones.
+
+| Track | Default owner | Idea | Main refs |
+|---|---|---|---|
+| `t1_gbdt` | Aurèle | Strong GBDT baseline on the 342 features + losses for bounded targets (logit link, cross-entropy) | arXiv 2512.05231, 2604.07066 |
+| `t2_chunks` | Nel | Score sentences/chunks, then length-weighted aggregation (mimics how the target is built) | arXiv 2512.05231 |
+| `t3_ushape` | Rubens | Joint valence–arousal: U-shape, chained and multi-output models | arXiv 2601.21483, 2608.30828 |
+| `t4_text` | Sachit | Text models trained from scratch: sparse TF-IDF + linear, small NN, stacking | arXiv 2604.07066 |
+| `t5_domain` | Kishan | Train/test shift, validation design, per-country models, error and bias analysis | arXiv 2609.26346, 2512.10882 |
+
+Owners can swap. **The detailed plan of each track is in `tracks/<track>/README.md`. Read yours before coding.**
+
+### Rules for every track (mandatory, so results are comparable)
+1. **Work only in `tracks/<your_track>/`** (notebooks + scripts). Do not edit another track's folder.
+2. **Use `src/common.py`** for everything shared:
+   - `load()` to read data, `feature_cols()` for the 342 features,
+   - `folds(ids)` for CV: **the same 5 folds for everyone**, deterministic from the id. Never use your own split for reported scores.
+   - `score()` = the shared metric. Primary: `rmse_mean` (lower is better) until the official HFactory metric is known, then we switch.
+3. **Log every run** (good or bad) with `log_result(track, experiment, train_ids, y, oof, test_ids, test_pred, notes=...)`:
+   - one line in `results/scores/<track>.csv`,
+   - OOF preds in `results/oof/`, test preds in `results/test/` (needed for the final ensemble).
+   Name experiments clearly: `lgbm_all_feats_l2`, `lgbm_xent`, `chunks_sent_wmean`...
+4. Run `python scripts/leaderboard.py` to rebuild `results/RESULTS.md` (best run per track + all runs). If `RESULTS.md` conflicts on merge: rerun the script, never hand-edit.
+5. Keep `tracks/<track>/README.md` up to date: what was implemented, numbers, plots, what worked, limits. It goes almost as is into the final report.
+6. Changes to `src/common.py` (folds, metric) only after telling the team. `t5_domain` may change the folds if the test turns out to be a time split: then everyone reruns their best run.
+7. No pretrained models, no AutoML, no external data without written OK (see §4). Fit any vectorizer/encoder on train only, inside the folds when it uses the target.
+8. To submit on HFactory: `write_submission(test_ids, pred, name)` → `submissions/<name>.csv`. Put the LB score in the `lb` field of the run.
+
+### How your Claude agent should work on a track
+- Start with the simplest working version, log it, then iterate. One experiment = one logged run.
+- After each meaningful result: update the track README, run the leaderboard script. The hooks push automatically.
+- Always compare against the current best `t1_gbdt` run in `results/RESULTS.md`.
+- Add simple plots (bars, curves, scatter) in the notebook, not only prints.
+- Keep code short. No big generic frameworks.
+
+### Timeline
+| When | What |
+|---|---|
+| Fri night | Setup, data download, first run of each track (even a bad one). `t5` checks the train/test shift. |
+| Sat 12:00 | Every track has a full working result logged. |
+| Sat 22:00 | Tracks frozen. Best OOF/test preds of each track in `results/`. |
+| Sun morning | Ensemble on `main` (weighted average / ridge stacking on OOFs), final submission. |
+| Sun 16:00 | All deliverables uploaded. |
+
+---
+
 ## 1. The event
 
 - **Hi!ckathon #7**, organized by Hi! PARIS (HEC Paris + IP Paris). Partners: TotalEnergies, Capgemini, L'Oréal, Vinci, Schneider Electric.
 - **Theme: "AI & Democracy".**
 - Location: ENSTA Paris, 828 bd des Maréchaux, Palaiseau. In person only.
-- **Team 34, room 13.18**: Aurèle Habbard, Axel Bröns, Sachit Kumar, Bérenger Mariage Blondlet, Kishan Modi.
+- **Team (re-formed after the official list), room 13.18**:
+  | Name | GitHub |
+  |---|---|
+  | Aurèle Habbard (repo owner) | `Aureleee` |
+  | Nel Choisnet Dupuij | `neldupuij` |
+  | Rubens Do Fetal | `rdzinhoo941` |
+  | Sachit Kumar | `sachitkumardps` |
+  | Kishan Modi | `kmodi2412` |
 - Data hosting + leaderboard submissions: **HFactory (Data Factory HEC)**, https://hfactory.io/
 - Comms: Discord (optional). Emergency contact: Pierre-Antoine Amiand-Leroy, 06 36 93 00 85.
 
@@ -233,11 +288,18 @@ HI_PARIS/
 ├── LICENSE              # LGPL v3
 ├── .gitignore           # data/, *.csv, *.parquet, models
 ├── .claude/settings.json  # sync hooks
-├── experiments.md       # one line per run
+├── requirements.txt
+├── tracks/              # one folder per research track (see §0bis)
+│   ├── t1_gbdt/  t2_chunks/  t3_ushape/  t4_text/  t5_domain/
+├── results/
+│   ├── scores/          # <track>.csv, one line per run (log_result)
+│   ├── oof/  test/      # predictions for the final ensemble
+│   └── RESULTS.md       # generated by scripts/leaderboard.py
 ├── scripts/
 │   ├── sync.sh          # pull own branch + merge origin/main (before each prompt)
 │   ├── autopush.sh      # commit + push own branch (after each answer)
-│   └── download_data.sh # Drive -> data/raw -> parquet
+│   ├── download_data.sh # Drive -> data/raw -> parquet
+│   └── leaderboard.py   # results/scores -> results/RESULTS.md
 ├── data/
 │   ├── raw/             # Drive CSVs (never committed)
 │   └── processed/       # parquet
@@ -260,7 +322,7 @@ HI_PARIS/
 - Never commit data or anything from the Drive.
 - Keep code short and readable, the team reads it in a rush.
 - Fixed seeds everywhere (organizers use 2026).
-- Each experiment: log CV score per target + overall in `experiments.md` (model, features, CV, LB).
+- Each experiment: log it with `log_result()` (see §0bis), never by hand.
 - Always write predictions with the exact columns and ids of `y_test_zero.csv`; assert row count and id order before saving.
 - Do not suggest anything that breaks §4 (pretrained models, AutoML, paid APIs, scraping).
 - Git: follow §0. SSH remote `git@github.com:Aureleee/HI_PARIS.git`.
