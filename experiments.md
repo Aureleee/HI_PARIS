@@ -1,4 +1,4 @@
-# Experiments log (append only, one line per run)
+# Experiments
 
-| date-time | who | model | features | CV valence | CV arousal | CV overall | LB | notes |
-|---|---|---|---|---|---|---|---|---|
+Superseded by `results/` : every run is logged with `log_result()` from `src/common.py`,
+and `python scripts/leaderboard.py` builds `results/RESULTS.md`.
