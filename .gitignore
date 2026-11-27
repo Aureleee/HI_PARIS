@@ -1,0 +1,16 @@
+data/
+*.csv
+*.parquet
+*.xlsx
+*.pkl
+*.joblib
+*.npy
+*.npz
+*.pt
+*.zip
+models/
+__pycache__/
+.ipynb_checkpoints/
+.DS_Store
+.venv/
+.claude/settings.local.json
