@@ -15,7 +15,7 @@
 ### Branches
 - **One branch per person**, named after the first name: `aurele`, `nel`, `rubens`, `sachit`, `kishan`.
 - **Never commit or push directly to `main`.** If the current branch is `main`, stop and ask the user to run `git checkout -b <firstname>` (or `git checkout <firstname>` if it exists).
-- `main` = what works. Merge into `main` through a GitHub Pull Request, only when the code runs end to end. Tell the team on Discord when you merge.
+- `main` = what works. When your code runs end to end, merge it from the terminal with `bash scripts/ship.sh` (merges your branch into `main` and pushes). No Pull Request needed. Tell the team when you ship.
 
 ### Automatic sync (already wired, see `.claude/settings.json`)
 - **Before each prompt** (`UserPromptSubmit` hook → `scripts/sync.sh`): auto-commits local changes, pulls your own branch, then merges `origin/main` into it. Its output appears in your context as `[sync] ...`.
@@ -299,7 +299,8 @@ HI_PARIS/
 │   ├── sync.sh          # pull own branch + merge origin/main (before each prompt)
 │   ├── autopush.sh      # commit + push own branch (after each answer)
 │   ├── download_data.sh # Drive -> data/raw -> parquet
-│   └── leaderboard.py   # results/scores -> results/RESULTS.md
+│   ├── leaderboard.py   # results/scores -> results/RESULTS.md
+│   └── ship.sh          # merge your branch into main + push
 ├── data/
 │   ├── raw/             # Drive CSVs (never committed)
 │   └── processed/       # parquet
