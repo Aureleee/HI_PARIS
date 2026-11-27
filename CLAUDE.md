@@ -2,7 +2,13 @@
 
 > Context file for Claude Code. Read it fully before touching the code.
 > Source of truth: the organizers' Drive folder "Hi!ckathon-Challenge" + `Reglement_Hickathon2026.pdf`.
-> Last update: Fri 27 Nov 2026, ~21:15.
+> Last update: Fri 27 Nov 2026, ~23:20.
+>
+> ## ⚠️ THE CHALLENGE IS UNSUPERVISED (changed Fri 23:15)
+> **There are NO training labels and there will be none.** `x_train_final` has no valence/arousal, and that is by design.
+> We do not train models on targets. We **estimate valence and arousal directly** with state-of-the-art unsupervised methods
+> (lexicons, chunk scoring, combination of signals, weak supervision on pseudo-labels), and we compare methods
+> with the HFactory leaderboard + agreement between methods. Every supervised idea is archived in `tracks/_supervised_archive/`.
 >
 > **Every Claude agent of the team: start with "▶ START HERE" just below.**
 
@@ -17,11 +23,11 @@
 
 | Person | Branch | Track | Track plan |
 |---|---|---|---|
-| Aurèle | `aurele` | `t1_gbdt` | `tracks/t1_gbdt/README.md` |
-| Nel | `nel` | `t2_chunks` | `tracks/t2_chunks/README.md` |
-| Rubens | `rubens` | `t3_ushape` | `tracks/t3_ushape/README.md` |
-| Sachit | `sachit` | `t4_text` | `tracks/t4_text/README.md` |
-| Kishan | `kishan` | `t5_domain` | `tracks/t5_domain/README.md` |
+| Aurèle | `aurele` | `t1_lexicon` | `tracks/t1_lexicon/README.md` |
+| Nel | `nel` | `t2_chunks` (+ `t6_papers` if time) | `tracks/t2_chunks/README.md` |
+| Rubens | `rubens` | `t3_combine` | `tracks/t3_combine/README.md` |
+| Sachit | `sachit` | `t4_weak` | `tracks/t4_weak/README.md` |
+| Kishan | `kishan` | `t5_validation` | `tracks/t5_validation/README.md` |
 
 (Owners may swap tracks. If the user says so, follow the user and update this table.)
 
@@ -87,7 +93,7 @@ cd <repo path>; git add -A; git commit -m "<short message>"; python scripts\gits
 ### Avoiding conflicts
 - Your code lives in `tracks/<your_track>/`. Don't edit someone else's track; copy what you need.
 - Shared code lives in `src/`. Small focused changes, announced to the team.
-- Results: only through `log_result()` (each track has its own CSV, so no conflicts).
+- Results: only through `log_submission()` (each track has its own CSV in `results/runs/`, so no conflicts).
 
 ### Commits
 - Commit messages short, English, imperative: `add lgbm baseline on nrc features`.
@@ -104,51 +110,49 @@ Then open Claude Code in the repo and accept the project hooks.
 
 ---
 
-## 0bis. Research tracks (one per person, compared on the same ground)
+## 0bis. Research tracks — UNSUPERVISED (one per person, compared on the same ground)
 
-Each person owns **one track**: one research idea from a recent paper, reimplemented from scratch, pushed as far as possible (implementation, tests, training, ablations). At the end we compare all tracks on the same folds and ensemble the best ones.
+No labels: each person owns **one family of state-of-the-art unsupervised methods**, implements it, and produces test scores.
+We compare all runs on the HFactory leaderboard (limited uploads, planned by t5) and by agreement between methods, then blend the best.
 
 | Track | Default owner | Idea | Main refs |
 |---|---|---|---|
-| `t1_gbdt` | Aurèle | Strong GBDT baseline on the 342 features + losses for bounded targets (logit link, cross-entropy) | arXiv 2512.05231, 2604.07066 |
-| `t2_chunks` | Nel | Score sentences/chunks, then length-weighted aggregation (mimics how the target is built) | arXiv 2512.05231 |
-| `t3_ushape` | Rubens | Joint valence–arousal: U-shape, chained and multi-output models | arXiv 2601.21483, 2608.30828 |
-| `t4_text` | Sachit | Text models trained from scratch: sparse TF-IDF + linear, small NN, stacking | arXiv 2604.07066 |
-| `t5_domain` | Kishan | Train/test shift, validation design, per-country models, error and bias analysis | arXiv 2609.26346, 2512.10882 |
-| `t6_papers` | Nel (or whoever has time) | 3 models from Nel's papers: induced lexicon mean (Werlen 2021), period context (Buechel 2019), transformer trained from scratch small vs bigger (Mendes 2023, Kim 2024) | see `tracks/t6_papers/README.md` |
+| `t1_lexicon` | Aurèle | Lexicon baselines from the organizers' NRC features (mean, median, shrinkage for short speeches). First LB anchors. **3 submissions ready.** | Werlen 2021; NRC VAD v2 (arXiv 2503.23547) |
+| `t2_chunks` | Nel | Score chunks/sentences, then **length-weighted mean** (= the target name). Lexicons induced per language from the doc-level NRC scores, since there is no `text_en`. | Werlen 2021; arXiv 2512.05231 |
+| `t3_combine` | Rubens | Combine signals without labels: arousal from several cues (lexicon, `ctx_*`, punctuation, distance of V to 0.5), negation correction for valence, factor analysis | arXiv 2601.21483, 2608.30828 |
+| `t4_weak` | Sachit | Weak supervision: text models trained from scratch on lexicon pseudo-labels (TF-IDF ridge, small transformer), lexicon expansion by label propagation | arXiv 1703.09825, 1708.03910, 2302.14021 |
+| `t5_validation` | Kishan | Metric + upload plan, agreement between methods, sanity checks, Italian set, biases for the report | arXiv 2512.10882, 2609.26346 |
+| `t6_papers` | Nel / whoever has time | Nel's papers: emotion time series per parliament (Buechel 2019) for the mockup/pitch, valorisation (Shah 2023) | `tracks/t6_papers/README.md` |
 
 Owners can swap. **The detailed plan of each track is in `tracks/<track>/README.md`. Read yours before coding.**
 
 ### Rules for every track (mandatory, so results are comparable)
-1. **Work only in `tracks/<your_track>/`** (notebooks + scripts). Do not edit another track's folder.
-2. **Use `src/common.py`** for everything shared:
-   - `load()` to read data, `feature_cols()` for the 342 features,
-   - `folds(ids)` for CV: **the same 5 folds for everyone**, deterministic from the id. Never use your own split for reported scores.
-   - `score()` = the shared metric. Primary: `rmse_mean` (lower is better) until the official HFactory metric is known, then we switch.
-3. **Log every run** (good or bad) with `log_result(track, experiment, train_ids, y, oof, test_ids, test_pred, notes=...)`:
-   - one line in `results/scores/<track>.csv`,
-   - OOF preds in `results/oof/`, test preds in `results/test/` (needed for the final ensemble).
-   Name experiments clearly: `lgbm_all_feats_l2`, `lgbm_xent`, `chunks_sent_wmean`...
-4. Run `python scripts/leaderboard.py` to rebuild `results/RESULTS.md` (best run per track + all runs). If `RESULTS.md` conflicts on merge: rerun the script, never hand-edit.
-5. Keep `tracks/<track>/README.md` up to date: what was implemented, numbers, plots, what worked, limits. It goes almost as is into the final report.
-6. Changes to `src/common.py` (folds, metric) only after telling the team. `t5_domain` may change the folds if the test turns out to be a time split: then everyone reruns their best run.
-7. No pretrained models, no AutoML, no external data without written OK (see §4). Fit any vectorizer/encoder on train only, inside the folds when it uses the target.
-8. To submit on HFactory: `write_submission(test_ids, pred, name)` → `submissions/<name>.csv`. Put the LB score in the `lb` field of the run.
+1. **Work only in `tracks/<your_track>/`**. Do not edit another track's folder.
+2. **Use `src/common.py`**: `load()`, `feature_cols()` (the 214 features), `log_submission()`, `agreement()`, `write_submission()`.
+3. **Every method that produces test scores**: `log_submission(track, experiment, test_ids, pred, notes)`:
+   - writes `submissions/<track>__<experiment>.csv` (exact `y_test_zero` format) to upload on HFactory,
+   - saves `results/test/<track>__<experiment>.parquet` (for blending and agreement),
+   - adds a line in `results/runs/<track>.csv` with mean/std of the scores. **After uploading, write the LB score in its `lb` column.**
+4. `python scripts/leaderboard.py` rebuilds `results/RESULTS.md` (all runs sorted by LB). On merge conflict: rerun, never hand-edit.
+5. **Uploads are limited**: coordinate with t5 before uploading. Never upload two near-identical files.
+6. Keep scores on the NRC [0,1] scale unless the LB shows otherwise.
+7. The unlabeled train (870k speeches with features) can be used freely: fitting lexicons, pseudo-labels, normalisation stats.
+8. No pretrained models (unless organizers say otherwise in writing), no AutoML, no external data without written OK (see §4). **Never try to reconstruct the hidden test targets** (rules art. 7 bis v), e.g. by probing the leaderboard on purpose.
+9. Keep `tracks/<track>/README.md` up to date: numbers, plots, what worked, limits. It goes almost as is into the final report.
 
 ### How your Claude agent should work on a track
-- Start with the simplest working version, log it, then iterate. One experiment = one logged run.
-- After each meaningful result: update the track README, run the leaderboard script. The hooks push automatically.
-- Always compare against the current best `t1_gbdt` run in `results/RESULTS.md`.
-- Add simple plots (bars, curves, scatter) in the notebook, not only prints.
-- Keep code short. No big generic frameworks.
+- Start with the simplest working version, log it, then iterate.
+- Always compare with the current best run in `results/RESULTS.md` and with `agreement()`.
+- Add simple plots (distributions, per-source/year curves, scatter V vs A), not only prints.
+- Keep code short.
 
 ### Timeline
 | When | What |
 |---|---|
-| Fri night | Setup, data download, first run of each track (even a bad one). `t5` checks the train/test shift. |
-| Sat 12:00 | Every track has a full working result logged. |
-| Sat 22:00 | Tracks frozen. Best OOF/test preds of each track in `results/`. |
-| Sun morning | Ensemble on `main` (weighted average / ridge stacking on OOFs), final submission. |
+| Fri night | Setup, data. t1 baselines uploaded (gives the metric's behaviour). t5 finds metric + upload limit. |
+| Sat 12:00 | Every track has at least one submission file logged. |
+| Sat 22:00 | Tracks frozen. |
+| Sun morning | Blend of the best methods on `main`, final submission. |
 | Sun 16:00 | All deliverables uploaded. |
 
 ---
@@ -183,23 +187,20 @@ Missing any of the 4 deliverables = not eligible for selection.
 
 ---
 
-## 2. The task
+## 2. The task (UNSUPERVISED)
 
-**Regression on parliamentary speeches.** For each speech, predict two continuous targets:
+For each test speech, estimate two continuous scores, **without any training label**:
 
-- `valence_chunks_weighted_mean`
-- `arousal_chunks_weighted_mean`
+- `valence_chunks_weighted_mean` (negative ↔ positive)
+- `arousal_chunks_weighted_mean` (calm ↔ excited)
 
-Name suggests the targets are emotion scores (valence = positive/negative, arousal = calm/excited) computed on text chunks of the speech, then averaged with weights (probably chunk length). They are **not** the NRC lexicon features we get as input, but those are the obvious first proxies.
+The names say how the hidden truth was built: emotion scores computed on **chunks** of each speech, then a **weighted mean** (most likely by chunk length). Our job: reproduce the best possible estimate with unsupervised state-of-the-art methods. The organizers' `nrc_*` features (NRC VAD lexicon on the English text, scale [0,1]) are the natural starting point: test means are `nrc_V_mean` ≈ 0.564, `nrc_A_mean` ≈ 0.459.
 
-Corpus: speeches from several parliaments.
-- `source` values seen in the sample: `assemblee`, `senat` (FR), `uk_commons` (UK), `us_congress` (US).
-- Plus a separate Italian file (`x_Italia.csv`), see §3.
-- Dates seen: 1989 → 2026.
+Corpus: `assemblee`, `senat` (FR), `uk_commons` (UK), `us_congress` (US), 1988 → 2026. Plus `x_Italia.csv`: unlabeled Italian speeches (text, date, 214 features; no id, no source).
 
-**Metric: not written in any Drive file yet.** It is "communicated at kick-off" (rules art. 7). Check HFactory / Discord and fill it here:
+**Metric: not written in any Drive file.** Check HFactory / Discord and fill it here:
 - Metric: `TODO`
-- Submission limit per day: `TODO`
+- Upload limit per day: `TODO`
 - Public/private leaderboard split: `TODO`
 
 ### Submission format
@@ -223,7 +224,7 @@ Drive folder: https://drive.google.com/drive/folders/1i2Ith9mfzTHyb1DX2WHSuXxeB2
 
 | File | Size | Content |
 |---|---|---|
-| `x_train_final.csv` | 1.85 GB | Train set. Should contain the targets (there is no separate `y_train`). **Check the header first.** |
+| `x_train_final.csv` | 1.85 GB | 870k UNLABELED speeches (text + features). No targets: the challenge is unsupervised. |
 | `x_test_final.csv` | 818 MB | Test features |
 | `y_test_zero.csv` | 4.1 MB | Submission template (all zeros) |
 | `x_Italia.csv` | 909 MB | Italian parliament speeches. Role unclear: extra test domain? unlabeled transfer set? **Ask organizers.** |
@@ -243,17 +244,18 @@ If gdown fails (Drive quota / permissions), download the files by hand from the 
 
 ### What we know from the real files (checked Fri 27 Nov, 22:45)
 - `x_train_final`: **869,896 rows**, ids 0 → 869,895. `x_test_final`: **372,812 rows**, ids 869,896 → 1,242,707.
-- **⚠️ The train file has NO target columns** (no valence/arousal) and there is no `y_train` in the Drive. Asked the organizers / check HFactory. When it arrives: put it in `data/raw/`, run `python src/prepare_data.py`, it becomes `data/processed/y_train.parquet` (columns `id` + the 2 targets). All training scripts read it from there.
+- **No target columns anywhere, by design: the challenge is unsupervised** (confirmed Fri 23:15). The train file is 870k unlabeled speeches we can use to fit lexicons, pseudo-labels and statistics.
 - 218 columns: `id`, `clean_text`, `date`, `source` + **214 features**. Families A, B, D, F, G, H only. **No `tfidf_svd_*`, no `char_tfidf_svd_*`, no `text_en`.**
 - `source` = 25 % each: `assemblee` (2007–2024), `senat` (1996–2026), `uk_commons` (1988–2019), `us_congress` (1994–2024).
-- **Test = random split**: same sources, same years, same length distribution as train. The shared random folds in `src/common.py` are the right validation.
+- **Test = random split**: same sources, same years, same length distribution as train.
+- Speeches are short: median ≈ 35 words; 0.5 % of test speeches have no NRC word at all (`nrc_*_mean` falls back to 0.5).
 - **Drive download quota**: on Friday night gdown fails with "Too many users have viewed or downloaded this file". Workaround: open the file in the browser and use "Download", or make a copy in your own Drive and download the copy.
 
 ### Columns (from `sample_x_test.csv`, 218 columns)
 
 Metadata: `id`, `clean_text` (raw speech, original language), `date` (YYYY-MM-DD), `source`.
 
-Precomputed features, 342 defined in the dictionary, grouped in families:
+Precomputed features: 342 defined in the dictionary, **214 actually present** (families E and I missing):
 
 | Family | Prefix | # | What |
 |---|---|---|---|
@@ -314,32 +316,23 @@ The data part must be at least half of the work.
 
 ---
 
-## 6. Plan
+## 6. Plan (unsupervised)
 
-### Phase 0 — setup (Fri night)
-- [ ] Get HFactory access, find the metric, fill §2.
-- [ ] `bash scripts/download_data.sh` (each teammate).
-- [ ] Check train header: targets, `text_en`, families E/I present?
-- [ ] Check `x_Italia.csv`: labeled? in the test? Ask organizers.
-- [ ] Submit `y_test_zero` + a train-mean baseline to validate the pipeline.
+### Phase 0 — Fri night
+- [x] Data downloaded and converted. Test = random split. No labels (by design).
+- [x] t1: 3 lexicon baselines ready (`raw_mean`, `median`, `shrink_k5`), in `Desktop/HACKATHON/submissions/` on Aurèle's Mac.
+- [ ] Find the metric + upload limit on HFactory (t5). Upload `t1_lexicon__raw_mean` first.
 
-### Phase 1 — EDA (Fri night / Sat morning)
-- [ ] Target distributions, correlation valence vs arousal, by `source` and by year.
-- [ ] Train vs test shift: `source`, `date`, text length. Are test ids a later time period or a random split? Validation must mimic it.
-- [ ] Quick feature importance; how much do `nrc_V_*` / `nrc_A_*` explain alone.
+### Phase 1 — Sat morning: one family of methods per person (see §0bis)
+- t2 chunks + induced lexicons, t3 combination, t4 weak supervision, t5 validation, t6 time series.
 
-### Phase 2 — models (Sat)
-- Validation: KFold with stratification on `source` (+ time-based split if the test is later in time).
-- Baseline: ridge on the 342 features.
-- Main: GBDT (LightGBM / CatBoost), one model per target, `source` as categorical, date → year.
-- Own text features from scratch: TF-IDF on `clean_text` (and `text_en` if present) → ridge / linear SVR, stacked into the GBDT.
-- Optional: small NN trained from scratch on TF-IDF.
-- Theme features from `dictionnaire_thematiques_parlement.xlsx` (counts per theme, FR/EN/IT).
-- Ensemble the best ones. Tune on CV, not on the leaderboard.
+### Phase 2 — Sat afternoon/evening
+- Agreement table between all methods. Upload the most promising ones (t5 plans the uploads).
+- Blend: average of the best 2–3 methods (weights from LB).
 
 ### Phase 3 — product + report (Sat evening → Sun)
-- Mockup idea space: emotion/tone barometer of parliamentary debates by theme, country and time (FR / UK / US / IT). Use the theme dictionary to slice. No ranking of named MPs.
-- Report: method, CV vs LB, error analysis by source/language/period, biases (translation to English, NRC lexicon bias, US/UK vs FR, era drift).
+- Mockup: emotion barometer of parliaments (FR / UK / US / IT) by theme (`dictionnaire_thematiques_parlement.xlsx`) and over time (t6). Any AI inside the mockup runs locally (our own scoring). No ranking of named MPs.
+- Report: methods, why these unsupervised choices, agreement analysis, limits and biases (English lexicon on translated FR text, short speeches, arousal from text only, era drift).
 - Video: script, rehearse, record in one take before Sunday 15:00.
 
 ### Phase 4 — wrap up (Sun before 16:00)
@@ -360,9 +353,10 @@ HI_PARIS/
 ├── .claude/settings.json  # sync hooks
 ├── requirements.txt
 ├── tracks/              # one folder per research track (see §0bis)
-│   ├── t1_gbdt/  t2_chunks/  t3_ushape/  t4_text/  t5_domain/
+│   ├── t1_lexicon/ t2_chunks/ t3_combine/ t4_weak/ t5_validation/ t6_papers/
+│   └── _supervised_archive/   # old supervised code, reusable with pseudo-labels
 ├── results/
-│   ├── scores/          # <track>.csv, one line per run (log_result)
+│   ├── runs/            # <track>.csv, one line per submission (log_submission), LB filled by hand
 │   ├── oof/  test/      # predictions for the final ensemble
 │   └── RESULTS.md       # generated by scripts/leaderboard.py
 ├── scripts/
@@ -394,7 +388,7 @@ HI_PARIS/
 - Never commit data or anything from the Drive.
 - Keep code short and readable, the team reads it in a rush.
 - Fixed seeds everywhere (organizers use 2026).
-- Each experiment: log it with `log_result()` (see §0bis), never by hand.
+- Each method: log it with `log_submission()` (see §0bis), never by hand.
 - Always write predictions with the exact columns and ids of `y_test_zero.csv`; assert row count and id order before saving.
 - Do not suggest anything that breaks §4 (pretrained models, AutoML, paid APIs, scraping).
 - Git: follow §0. SSH remote `git@github.com:Aureleee/HI_PARIS.git`.
@@ -403,9 +397,9 @@ HI_PARIS/
 
 ## 9. Open questions (to ask organizers / check on HFactory)
 
-1. Evaluation metric, and is it averaged over the 2 targets?
-2. Role of `x_Italia.csv` (part of the test? labels?).
-3. Are `text_en`, `tfidf_svd_*`, `char_tfidf_svd_*` in the final train/test files?
-4. Submission limits and leaderboard split.
-5. Compute provided by organizers (GPU? RAM?) and how to access it.
-6. Licence of the source data (communicated at kick-off).
+1. Evaluation metric (RMSE? correlation?), averaged over the 2 targets? Upload limit per day?
+2. How were the hidden scores computed (which lexicon/model, chunk size, weights)? Even a hint helps.
+3. Can we use the **NRC VAD lexicon file** itself (word level)? The organizers used it for the `nrc_*` features.
+4. In this unsupervised setting, are **pretrained models** still forbidden (rules art. 7)? Get a written answer before using any.
+5. Role of `x_Italia.csv` (is it scored? only for the product?).
+6. Compute provided by organizers and how to access it.

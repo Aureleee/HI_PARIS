@@ -1,21 +1,25 @@
-# t2_chunks — Chunk/sentence scoring then weighted aggregation (mimic how the target is built)
+# t2_chunks — Chunk scoring + length-weighted mean (mimic how the target is named and built)
 
-Owner: Nel (default assignment, swap freely)
+Owner: Nel (default, swap freely). **UNSUPERVISED: there are no training labels.**
 
 ## Papers / ideas
-- Knesset VAD paper: sentence-level VAD then per-document aggregation: mean, share of sentences >0.7 / <0.3, variance of V (arXiv 2512.05231)
-- The target names themselves: `*_chunks_weighted_mean` = scores computed on chunks, then weighted mean
+- Target names: `*_chunks_weighted_mean` → the organizers scored chunks of each speech, then took a weighted mean (weights = chunk length, most likely).
+- Werlen 2021: mean of lexicon words per unit of text.
+- Knesset VAD paper (arXiv 2512.05231): sentence scores aggregated per document (mean, share of extreme sentences, variance).
 
 ## Plan
-1. Split `clean_text` into sentences/chunks (and `text_en` if present). Look at the length distribution.
-2. Per-chunk features computed by us: length, punctuation, negations, questions/exclamations, uppercase, numbers.
-3. Per-chunk emotion score learned from train only (no external lexicon): e.g. TF-IDF + ridge trained at speech level, applied to each chunk (multiple-instance style). Fit inside folds to avoid leakage.
-4. Aggregate per speech: length-weighted mean (like the target), min, max, std, q10/q90, share of extreme chunks, first vs last chunk.
-5. Feed the aggregates (+ the 342 features) to LightGBM. Compare with and without.
-6. Test chunk sizes (sentence, 50 words, 100 words) and weighting (by chars vs by words).
+1. Problem: `clean_text` is in the original language (FR for assemblee/senat) and we have NO `text_en`. The NRC lexicon is English.
+2. Way out without external data: **induce a word lexicon in each language from the organizers' doc-level scores** (pseudo-labels): word value = smoothed mean of `nrc_V_mean`/`nrc_A_mean` over the train speeches containing it (same code as `tracks/_supervised_archive/t6_papers/m1_induced_lexicon.py`, with y = nrc scores). Train speeches are unlabeled but have the features: use them all.
+3. Split each speech into chunks (sentences; and fixed 50/100-word windows). Score each chunk with the induced lexicon. Aggregate: weighted mean by chunk length (= the target name), plain mean, median.
+4. Compare chunk-weighted vs whole-speech scores, and their agreement with t1.
+5. If organizers allow the raw NRC VAD lexicon file (ask!): redo step 3 with it on the English sources.
+
+## How to log
+Every method that produces test scores: `log_submission(track, experiment, test_ids, pred, notes)` from `src/common.py`
+→ `submissions/<track>__<experiment>.csv` to upload on HFactory, then write the LB score in `results/runs/<track>.csv`.
 
 ## Results
-_Best runs are in results/RESULTS.md. Summarize here: what worked, what did not, numbers, plots._
+_To fill (numbers, plots, what worked)._
 
 ## Conclusions and limits
-_To fill. This section goes almost as is into the final report._
+_To fill. Goes almost as is into the final report._
