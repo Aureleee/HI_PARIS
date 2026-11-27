@@ -19,3 +19,4 @@ __pycache__/
 !results/scores/*.csv
 !results/oof/*.parquet
 !results/test/*.parquet
+!results/runs/*.csv

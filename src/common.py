@@ -1,5 +1,7 @@
-"""Shared helpers for every track: same data, same folds, same metric, same logging.
-Do not change the folds or the metric without telling the whole team."""
+"""Shared helpers for every track.
+UNSUPERVISED setting: there are NO training labels. Every method produces scores directly,
+we compare methods by (1) their leaderboard score on HFactory and (2) their agreement with each other.
+`folds`, `score`, `log_result` are kept for pseudo-label experiments (e.g. distillation in t4)."""
 import csv
 import subprocess
 import time
@@ -87,3 +89,38 @@ def write_submission(test_ids, pred, name):
     out.parent.mkdir(exist_ok=True)
     sub.to_csv(out, index=False)
     print("written", out, sub.shape)
+
+
+def log_submission(track, experiment, test_ids, pred, notes=""):
+    """Unsupervised mode. Writes submissions/<track>__<experiment>.csv (y_test_zero format),
+    saves results/test/<track>__<experiment>.parquet and appends a line to results/runs/<track>.csv.
+    After uploading on HFactory, write the LB score in the `lb` column of that line."""
+    pred = np.asarray(pred, dtype="float32")
+    write_submission(test_ids, pred, f"{track}__{experiment}")
+    p = RES / "test" / f"{track}__{experiment}.parquet"
+    p.parent.mkdir(parents=True, exist_ok=True)
+    pd.DataFrame({"id": test_ids, "valence": pred[:, 0], "arousal": pred[:, 1]}).to_parquet(p, index=False)
+    who = subprocess.run(["git", "config", "user.name"], capture_output=True, text=True).stdout.strip()
+    row = {"time": time.strftime("%Y-%m-%d %H:%M"), "track": track, "experiment": experiment, "who": who,
+           "mean_v": round(float(pred[:, 0].mean()), 4), "std_v": round(float(pred[:, 0].std()), 4),
+           "mean_a": round(float(pred[:, 1].mean()), 4), "std_a": round(float(pred[:, 1].std()), 4),
+           "lb": "", "notes": notes}
+    f = RES / "runs" / f"{track}.csv"
+    f.parent.mkdir(parents=True, exist_ok=True)
+    new = not f.exists()
+    with open(f, "a", newline="") as fh:
+        w = csv.DictWriter(fh, fieldnames=list(row))
+        if new:
+            w.writeheader()
+        w.writerow(row)
+    print(f"[{track}/{experiment}]", {k: row[k] for k in ("mean_v", "std_v", "mean_a", "std_a")})
+
+
+def agreement(names):
+    """Pearson correlation between the test predictions of several runs (results/test/<name>.parquet).
+    High agreement between independent methods = more trust, when no labels exist."""
+    d = {n: pd.read_parquet(RES / "test" / f"{n}.parquet").set_index("id") for n in names}
+    out = {}
+    for dim in ["valence", "arousal"]:
+        out[dim] = pd.DataFrame({n: x[dim] for n, x in d.items()}).corr().round(3)
+    return out
