@@ -29,7 +29,7 @@ Kim's question, answered on our data: the bigger model reproduces the rule score
 ## Submissions
 | Name on HFactory | File | Valence | Arousal |
 |---|---|---|---|
-| `t6-blend-rules-distill-big` | `t6_papers__blend_rules_distill_big.csv` (50/50 rules + big text model, same scale as rules) | _to upload_ | _to upload_ |
+| `t6-blend-rules-distill-big` | `t6_papers__blend_rules_distill_big.csv` (50/50 rules + big text model, same scale as rules) | **0.33** | **0.32** |
 | (not uploaded) | `t6_papers__distill_big.csv`, `distill_small`, `blend_rules_distill_small` | | |
 
 If the blend beats 0.30 / 0.24: the text model adds what the lexicon misses → push it (char n-grams, small NN). If it loses: distillation mostly smooths, like the failed shrinkage → stop this branch.
