@@ -205,6 +205,7 @@ Corpus: `assemblee`, `senat` (FR), `uk_commons` (UK), `us_congress` (US), 1988 �
 - **A big group of teams sits at 0.27 (valence) and 0.13 (arousal): almost surely the raw lexicon (`nrc_*_mean`)**. Our Group 34 already has 0.13 on arousal (uploaded 10:18). So `t1_lexicon__raw_mean` is known: no need to upload it.
 - `y_test_sample.csv` on the Guidelines page = the same all-zero template as `y_test_zero.csv`. **No labels anywhere.**
 - Compute instance: a hosted data science environment, CPU free, 30 credits for GPU.
+- **Sat 12:45: `t1_lexicon__eb_global` scored 0.03** (raw lexicon ≈ 0.27). Shrinking short speeches kills the signal → the hidden scores look like a transformer V/A model run on chunks (length-weighted mean), probably Mendes & Martins 2023. See `tracks/t1_lexicon/README.md`. Pretrained models are forbidden by art. 7 unless the organizers say otherwise in writing.
 
 ### Submission format
 

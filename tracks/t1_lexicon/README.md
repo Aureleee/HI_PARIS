@@ -51,7 +51,12 @@ Files are in `Desktop/HACKATHON/submissions/` on Aurèle's Mac (outside the repo
 | Run | LB valence | LB arousal |
 |---|---|---|
 | raw_mean | ≈ 0.27 (crowd of teams at that score) | 0.13 (our Group 34, Sat 10:18) |
-| eb_global | _to upload_ | _to upload_ |
+| eb_global | 0.03 (Sat 12:45) ❌ | — |
+
+## What the leaderboard taught us (Sat 12:45)
+- `eb_global` scored **0.03** vs ≈ 0.27 for the raw lexicon. Shrinking short speeches toward the mean destroys the signal: the hidden scores keep strong values on short speeches. So they are **not** a noisy word average that a statistician would smooth: they come from a model that gives confident scores even to a 2-word interjection.
+- Together with the target name (`*_chunks_weighted_mean`), the most likely recipe is a **transformer V/A regressor run on chunks of each speech, then a length-weighted mean** (chunks because transformers read ~512 tokens max). The best candidate is Mendes & Martins 2023 (multilingual V/A transformers, code and models public), which is also on the organizers'/Nel's paper list. Not confirmed.
+- The jump from 0.27 to 0.83 at the top of the leaderboard fits teams running such pretrained models. **Rules art. 7 forbid pretrained models, and art. 7 bis (v) forbids rebuilding the targets from public sources**: ask the organizers in writing before going that way.
 
 ## Conclusions and limits (draft for the report)
 - The organizers' NRC features already give a Werlen-style estimator for free. Its main weakness is noise on short speeches, which we quantify (K ≈ 20–40 words) and correct with empirical Bayes.
