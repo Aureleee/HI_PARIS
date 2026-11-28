@@ -16,6 +16,9 @@
 
 ## ▶ START HERE (every Claude agent, every new session)
 
+### 0. Read the lab notebook first
+`LAB_NOTEBOOK.md` lists every experiment already run, its leaderboard score, what failed and why. **Never redo a listed experiment.** After each experiment or upload, add a line there (newest on top) and fill the LB in `results/runs/<track>.csv`. Leaderboard snapshots: `results/leaderboard_snapshots.md`.
+
 ### 1. Find out who you work for
 1. Run `git config user.name`, `git config user.email` and `git branch --show-current`.
 2. Match with the team table in §1 (name or GitHub login). If it's unclear, **ask the user: "Who are you: Aurèle, Nel, Rubens, Sachit or Kishan?"** Never guess.
@@ -204,6 +207,7 @@ Corpus: `assemblee`, `senat` (FR), `uk_commons` (UK), `us_congress` (US), 1988 �
 - Metric: not written ("No guideline information"). **Higher is better** (top scores 0.83 valence, 0.72 arousal on Sat 12:40). Interim leaderboard on a subset; the final ranking uses another subset.
 - **A big group of teams sits at 0.27 (valence) and 0.13 (arousal): almost surely the raw lexicon (`nrc_*_mean`)**. Our Group 34 already has 0.13 on arousal (uploaded 10:18). So `t1_lexicon__raw_mean` is known: no need to upload it.
 - `y_test_sample.csv` on the Guidelines page = the same all-zero template as `y_test_zero.csv`. **No labels anywhere.**
+- **Submission names on HFactory**: `<track>-<method>` exactly as the file name without the prefix, e.g. file `t1_lexicon__rules_neg_excl_cues.csv` → name `t1-rules-neg-excl-cues`. Same name on Valence and Arousal. Then write the LB score in `results/runs/<track>.csv`.
 - Compute instance: a hosted data science environment, CPU free, 30 credits for GPU.
 - **Sat 12:45: `t1_lexicon__eb_global` scored 0.03** (raw lexicon ≈ 0.27). Shrinking short speeches kills the signal → the hidden scores look like a transformer V/A model run on chunks (length-weighted mean), probably Mendes & Martins 2023. See `tracks/t1_lexicon/README.md`. Pretrained models are forbidden by art. 7 unless the organizers say otherwise in writing.
 
