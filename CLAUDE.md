@@ -198,10 +198,13 @@ The names say how the hidden truth was built: emotion scores computed on **chunk
 
 Corpus: `assemblee`, `senat` (FR), `uk_commons` (UK), `us_congress` (US), 1988 → 2026. Plus `x_Italia.csv`: unlabeled Italian speeches (text, date, 214 features; no id, no source).
 
-**Metric: not written in any Drive file.** Check HFactory / Discord and fill it here:
-- Metric: `TODO`
-- Upload limit per day: `TODO`
-- Public/private leaderboard split: `TODO`
+### HFactory (checked Sat 28 Nov, 12:40)
+- Platform: https://app.hfactory.io/activities/832/topics/851/dcf9138f-9345-4395-8115-0ae1490f3a2c/submissions (log in with your HFactory account). Our official group there is **Group 34**.
+- **Two separate competitions: Valence and Arousal**, each with its own submissions page and leaderboard. **10 submissions per competition in total**, until **Sun 29 Nov, 16:00**. Upload the full CSV (`id` + both columns, 372,812 rows, `y_test_zero` format) to each.
+- Metric: not written ("No guideline information"). **Higher is better** (top scores 0.83 valence, 0.72 arousal on Sat 12:40). Interim leaderboard on a subset; the final ranking uses another subset.
+- **A big group of teams sits at 0.27 (valence) and 0.13 (arousal): almost surely the raw lexicon (`nrc_*_mean`)**. Our Group 34 already has 0.13 on arousal (uploaded 10:18). So `t1_lexicon__raw_mean` is known: no need to upload it.
+- `y_test_sample.csv` on the Guidelines page = the same all-zero template as `y_test_zero.csv`. **No labels anywhere.**
+- Compute instance: a hosted data science environment, CPU free, 30 credits for GPU.
 
 ### Submission format
 
