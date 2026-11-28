@@ -27,14 +27,15 @@ Newest entries at the top of each table. Scores = HFactory interim leaderboard (
 | `t1_lexicon__median.csv`, `mean_median`, `mid_q`, `polarity` | Robust centres of the lexicon | ≈ raw (r 0.76–0.98 with raw). Low priority. |
 | `t1_lexicon__eb_source.csv` | Shrinkage to parliament mean | ❌ same failure as eb_global. Don't upload. |
 | `t1_lexicon__rules_neg.csv` | Negation only, arousal = raw | Superseded by rules_neg_excl_cues. |
-| `t6_papers__distill_small.csv`, `t6_papers__blend_rules_distill_small.csv` | Text model trained from scratch (TF-IDF + ridge) to imitate the rule scores, alone and 50/50 blend | Next candidate (see t6). |
+| `t6_papers__blend_rules_distill_big.csv` → name **`t6-blend-rules-distill-big`** | 50/50 rules + text model trained from scratch (TF-IDF uni+bigrams, 2^20, ridge) distilled on the rule scores. Reads raw FR/EN text. | **Next upload.** Held-out agreement with rules 0.87 / 0.88. |
+| `t6_papers__distill_small/big.csv`, `blend_rules_distill_small.csv` | Same, small model or text model alone | Kim's small vs big: big reproduces the rules better (0.87/0.88 vs 0.80/0.83). Upload only if the blend wins. |
 
 ## Ideas not tried yet (pick one, then log it)
 - Intensifiers (VADER boosters: "very", "extremely") with `ctx_intensifier_scope_*`.
 - Per-chunk scoring: score sentences, then length-weighted mean (t2), mimics the target recipe.
 - Tune the arousal cue weights a little (they were fixed by hand, never fitted).
 - "But" rule (VADER): words after "but" weigh more.
-- Text models from scratch on the pseudo-labels (t4/t6): bigger, char n-grams, small NN.
+- Text models from scratch on the pseudo-labels: done in t6 (TF-IDF ridge, 2 sizes). Not tried: char n-grams, small NN, all 870k with bigrams (needs > 7 GB RAM).
 
 ## Don't
 - Don't upload near-duplicates (raw vs median vs mean_median): wasted uploads.
