@@ -2,4 +2,6 @@ time,track,experiment,who,mean_v,std_v,mean_a,std_a,lb,notes
 2026-11-28 13:04,t6_papers,distill_small,Aurèle Habbard,0.5639,0.0747,0.4644,0.0582,,text model from scratch (small) distilled on rule scores
 2026-11-28 13:04,t6_papers,blend_rules_distill_small,Aurèle Habbard,0.5639,0.0747,0.4644,0.0582,,50/50 rules + distilled text model (small)
 2026-11-28 13:12,t6_papers,distill_big,Aurèle Habbard,0.5639,0.0746,0.4644,0.0581,,text model from scratch (big) distilled on rule scores
-2026-11-28 13:12,t6_papers,blend_rules_distill_big,Aurèle Habbard,0.5639,0.0747,0.4644,0.0581,,50/50 rules + distilled text model (big)
+2026-11-28 13:12,t6_papers,blend_rules_distill_big,Aurèle Habbard,0.5639,0.0747,0.4644,0.0581,V 0.33 / A 0.32,50/50 rules + distilled text model (big)
+2026-11-28 13:47,t6_papers,selftrain_word,Aurèle Habbard,0.5639,0.0747,0.4644,0.0582,,"round 2 self-training, word+char text model alone"
+2026-11-28 13:47,t6_papers,blend_rules_selftrain_word,Aurèle Habbard,0.5639,0.0747,0.4644,0.0582,,50/50 rules + round-2 word+char text model
