@@ -9,6 +9,7 @@ Owner: Aurèle. **UNSUPERVISED: there are no training labels.**
 
 ## Code
 - `baselines.py`: 7 estimators → 7 submission files (`log_submission`). Writes `eb_constants.json`.
+- `rules.py`: rule-based corrections (VADER negation flip, exclamation boost, arousal cues), 2 submission files.
 - `checks.py`: label-free checks + figures in `figs/` (not in git: run the script to get them) + `checks_report.md`.
 
 ## The 7 estimators (test set, NRC [0,1] scale)
