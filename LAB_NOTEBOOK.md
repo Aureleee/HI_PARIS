@@ -23,18 +23,15 @@ Newest entries at the top of each table. Scores = HFactory interim leaderboard (
 | Sat 12:40 | Aurèle | t1 | `Test Submission 1` (= `t1-eb-global`) | `t1_lexicon__eb_global.csv` | 0.09 | 0.03 | ❌ do not retry | Empirical Bayes shrinkage of short speeches. Kills the signal: the hidden scores are not a noisy word average. Any method that pulls short speeches to the mean will fail. |
 | Sat 10:18 | team | t1 | `Test Submission` | `1127_2302_lexicon_baseline.csv` | (≈0.27, crowd) | 0.13 | baseline | Raw `nrc_*_mean`. Reference for everything else. |
 
-## Computed but NOT uploaded
+## Computed but NOT uploaded (files in `Desktop/HACKATHON/submissions/` on Aurèle's Mac)
 | File | What | Expected |
 |---|---|---|
 | `t6_papers__distill_big.csv` → name **`t6-distill-big`** | The text model alone (no rules) | **Next upload**: tells whether to give the text model more weight than 50/50. |
 | `t6_papers__blend_rules_selftrain_word.csv` | Self-training round 2 (OOF text preds blended with rules as new pseudo-labels, retrain) | ❌ Don't upload: r = 0.997 with `t6-blend-rules-distill-big`. Self-training converges to the same model. |
- (ready in `Desktop/HACKATHON/submissions/` on Aurèle's Mac)
-| File | What | Expected |
-|---|---|---|
 | `t1_lexicon__median.csv`, `mean_median`, `mid_q`, `polarity` | Robust centres of the lexicon | ≈ raw (r 0.76–0.98 with raw). Low priority. |
 | `t1_lexicon__eb_source.csv` | Shrinkage to parliament mean | ❌ same failure as eb_global. Don't upload. |
 | `t1_lexicon__rules_neg.csv` | Negation only, arousal = raw | Superseded by rules_neg_excl_cues. |
-| `t6_papers__distill_small/big.csv`, `blend_rules_distill_small.csv` | Same, small model or text model alone | Kim's small vs big: big reproduces the rules better (0.87/0.88 vs 0.80/0.83). Upload only if the blend wins. |
+| `t6_papers__distill_small.csv`, `blend_rules_distill_small.csv` | Small text model (Kim: small vs big) | Big reproduces the rules better (0.87/0.88 vs 0.80/0.83). Low priority. |
 
 ## Ideas not tried yet (pick one, then log it)
 - Intensifiers (VADER boosters: "very", "extremely") with `ctx_intensifier_scope_*`.
