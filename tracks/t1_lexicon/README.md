@@ -48,10 +48,10 @@ Model: var(speech mean | n matched words) = τ² + σ²/n. Posterior mean = (n·
 Files are in `Desktop/HACKATHON/submissions/` on Aurèle's Mac (outside the repo).
 
 ## Results
-| Run | LB |
-|---|---|
-| raw_mean | _to upload_ |
-| eb_global | _to upload_ |
+| Run | LB valence | LB arousal |
+|---|---|---|
+| raw_mean | ≈ 0.27 (crowd of teams at that score) | 0.13 (our Group 34, Sat 10:18) |
+| eb_global | _to upload_ | _to upload_ |
 
 ## Conclusions and limits (draft for the report)
 - The organizers' NRC features already give a Werlen-style estimator for free. Its main weakness is noise on short speeches, which we quantify (K ≈ 20–40 words) and correct with empirical Bayes.
