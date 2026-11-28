@@ -16,6 +16,9 @@
 
 ## ▶ START HERE (every Claude agent, every new session)
 
+### 0. Read the lab notebook first
+`LAB_NOTEBOOK.md` lists every experiment already run, its leaderboard score, what failed and why. **Never redo a listed experiment.** After each experiment or upload, add a line there (newest on top) and fill the LB in `results/runs/<track>.csv`. Leaderboard snapshots: `results/leaderboard_snapshots.md`.
+
 ### 1. Find out who you work for
 1. Run `git config user.name`, `git config user.email` and `git branch --show-current`.
 2. Match with the team table in §1 (name or GitHub login). If it's unclear, **ask the user: "Who are you: Aurèle, Nel, Rubens, Sachit or Kishan?"** Never guess.
